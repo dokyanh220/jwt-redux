@@ -11,10 +11,13 @@ import dokyanhIcon from '../assets/xiaomi-logo.png'
 import { API_ROOT } from '~/utils/constants'
 import authorizeAxiosInstance from '~/utils/authorizedAxios'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { setUser } from '~/redux/user/userSlice'
 
 function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const submitLogIn = async (data) => {
     const res = await authorizeAxiosInstance.post(`${API_ROOT}/v1/users/login`, data)
@@ -25,6 +28,14 @@ function Login() {
     localStorage.setItem('accessToken', res.data.accessToken)
     localStorage.setItem('refreshToken', res.data.refreshToken)
     localStorage.setItem('userInfo', JSON.stringify(userInfo))
+
+    // Dispatch user data vào Redux store
+    dispatch(setUser({
+      id: res.data.id,
+      name: res.data.name || res.data.email, // Nếu không có name thì dùng email
+      email: res.data.email,
+      accessToken: res.data.accessToken
+    }))
 
     // Điều hướng khi login thành công
     navigate('/dashboard')
